@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Health Insurance – Proposal Form</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;background:#eef2f5;margin:0;padding:18px;color:#222}
+.page{max-width:780px;margin:auto;background:#fff;padding:28px 34px;border-radius:10px;box-shadow:0 2px 12px #0002}
+h1{text-align:center;font-size:20px;margin:0 0 4px}
+.sub{text-align:center;color:#666;font-size:12px;margin-bottom:20px}
+.question{margin-bottom:18px;border:1px solid #cfd6dc;border-radius:6px;overflow:hidden;page-break-inside:avoid}
+.qtitle{font-weight:700;font-size:13.5px;background:#eef3f7;padding:9px 11px;line-height:1.45}
+.qbody{padding:11px}
+.options{display:flex;flex-wrap:wrap;gap:12px 22px}
+.option{font-size:13px;cursor:pointer}
+.option input{margin-right:5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #888;padding:7px 8px}
+th{background:#f3f3f3;text-align:left}
+input[type=text],textarea,select{font-family:inherit;font-size:13px}
+.text{width:100%;border:0;border-bottom:1px solid #777;padding:3px;background:transparent;outline:none}
+.details{display:none;margin-top:10px;border-top:1px dashed #bbb;padding-top:9px}
+.detail-table td:first-child{width:35%;font-weight:600;background:#fafafa}
+.detail-table input,.detail-table textarea{width:100%;border:0;outline:none;padding:3px;background:transparent}
+.detail-table textarea{min-height:40px;resize:vertical}
+.declaration{border:1px solid #888;padding:12px;margin-top:5px;font-size:12px;line-height:1.5;page-break-inside:avoid}
+.signature{margin-top:16px}
+.actions{display:flex;gap:10px;margin-top:20px}
+button{flex:1;border:0;border-radius:6px;padding:12px;background:#1769aa;color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#fff;color:#1769aa;border:2px solid #1769aa}
+.note{text-align:center;color:#666;font-size:11px;margin-top:9px}
+@media(max-width:600px){.page{padding:20px 15px}.grid{grid-template-columns:1fr}.actions{flex-direction:column}}
+@media print{
+body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;border-radius:0}
+.actions,.note{display:none}.question{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="page" id="formPage">
+<h1>HEALTH INSURANCE – PROPOSAL FORM</h1>
+<div class="sub">Preliminary Questionnaire</div>
+
+<form id="proposalForm">
+
+<div class="question">
+<div class="qtitle">1. Who would you like to insure?</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="cover" value="Self" required>Self</label>
+<label class="option"><input type="radio" name="cover" value="Self + Spouse">Self + Spouse</label>
+<label class="option"><input type="radio" name="cover" value="Family">Family</label>
+<label class="option"><input type="radio" name="cover" value="Parents">Parents</label>
+<label class="option"><input type="radio" name="cover" value="Family + Parents">Family + Parents</label>
+</div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">2. Age / Date of Birth of persons to be insured</div>
+<div class="qbody">
+<table>
+<tr><th style="width:38%">Member</th><th>Age / DOB</th></tr>
+<tr><td>Self</td><td><input class="text" name="self"></td></tr>
+<tr><td>Spouse</td><td><input class="text" name="spouse"></td></tr>
+<tr><td>Child 1</td><td><input class="text" name="child1"></td></tr>
+<tr><td>Child 2</td><td><input class="text" name="child2"></td></tr>
+<tr><td>Parent 1</td><td><input class="text" name="parent1"></td></tr>
+<tr><td>Parent 2</td><td><input class="text" name="parent2"></td></tr>
+</table>
+</div></div>
+
+<div class="question">
+<div class="qtitle">3. Occupation</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="occupation" value="Salaried" required>Salaried</label>
+<label class="option"><input type="radio" name="occupation" value="Professional / Doctor">Professional / Doctor</label>
+<label class="option"><input type="radio" name="occupation" value="Business / Self-employed">Business / Self-employed</label>
+<label class="option"><input type="radio" name="occupation" value="Retired">Retired</label>
+<label class="option"><input type="radio" name="occupation" value="Homemaker">Homemaker</label>
+<label class="option"><input type="radio" name="occupation" value="Other">Other: <input type="text" name="occupationOther" class="text" style="width:130px"></label>
+</div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">4. Has anyone to be insured had any Pre-Existing Disease (PED) or medical condition during the last 36 months?</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="ped" value="YES" required onclick="toggle('pedDetails',true)">YES</label>
+<label class="option"><input type="radio" name="ped" value="NO" onclick="toggle('pedDetails',false)">NO</label>
+</div>
+<div id="pedDetails" class="details">
+<table class="detail-table">
+<tr><td>Person</td><td><input name="pedPerson"></td></tr>
+<tr><td>Disease / Condition</td><td><input name="pedCondition"></td></tr>
+<tr><td>Diagnosed since</td><td><input name="pedSince"></td></tr>
+<tr><td>Current treatment / medication</td><td><textarea name="pedTreatment"></textarea></td></tr>
+</table>
+</div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">5. Has anyone been taking regular medication or undergoing treatment, consultation or medical follow-up during the last 36 months?</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="med" value="YES" required onclick="toggle('medDetails',true)">YES</label>
+<label class="option"><input type="radio" name="med" value="NO" onclick="toggle('medDetails',false)">NO</label>
+</div>
+<div id="medDetails" class="details">
+<table class="detail-table">
+<tr><td>Person</td><td><input name="medPerson"></td></tr>
+<tr><td>Condition / Treatment</td><td><input name="medCondition"></td></tr>
+<tr><td>Medication / Follow-up details</td><td><textarea name="medDetailsText"></textarea></td></tr>
+</table>
+</div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">6. Has anyone been hospitalised or undergone any surgery / procedure during the last 36 months?</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="hospital" value="YES" required onclick="toggle('hospitalDetails',true)">YES</label>
+<label class="option"><input type="radio" name="hospital" value="NO" onclick="toggle('hospitalDetails',false)">NO</label>
+</div>
+<div id="hospitalDetails" class="details">
+<table class="detail-table">
+<tr><td>Person</td><td><input name="hospitalPerson"></td></tr>
+<tr><td>Diagnosis / Reason</td><td><input name="hospitalReason"></td></tr>
+<tr><td>Hospitalisation / Procedure</td><td><input name="hospitalProcedure"></td></tr>
+<tr><td>Year</td><td><input name="hospitalYear"></td></tr>
+</table>
+</div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">7. Has anyone been advised any investigation, surgery or specialised treatment that is pending or planned?</div>
+<div class="qbody">
+<div class="options">
+<label class="option"><input type="radio" name="pending" value="YES" required onclick="toggle('pendingDetails',true)">YES</label>
+<label class="option"><input type="radio" name="pending" value="NO" onclick="toggle('pendingDetails',false)">NO</label>
+</div>
+<div id="pendingDetails" class="details">
+<table class="detail-table">
+<tr><td>Person</td><td><input name="pendingPerson"></td></tr>
+<tr><td>Investigation / Surgery / Treatment</td><td><textarea name="pendingTreatment"></textarea></td></tr>
+<tr><td>Expected date</td><td><input name="pendingDate"></td></tr>
+</table>
+</div>
+</div></div>
+
+<div class="declaration">
+<b>Declaration</b><br>
+I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.
+<div class="signature">
+<div class="grid">
+<label>Name<br><input class="text" name="name"></label>
+<label>Mobile<br><input class="text" name="mobile"></label>
+<label>Date<br><input class="text" name="date"></label>
+<label>Signature<br><input class="text" name="signature"></label>
+</div>
+</div>
+</div>
+
+<div class="actions">
+<button type="button" onclick="sendWhatsApp()">Send Details on WhatsApp</button>
+<button type="button" class="secondary" onclick="downloadPDF()">Download / Save as PDF</button>
+</div>
+<div class="note">WhatsApp destination: 7022021315 &nbsp; | &nbsp; PDF is formatted in tables and follows the proposal form point-by-point.</div>
+</form>
+</div>
+
+<script>
+function toggle(id,show){document.getElementById(id).style.display=show?'block':'none'}
+function val(n){const e=document.querySelector('[name="'+n+'"]');return e?e.value.trim():''}
+function sel(n){const e=document.querySelector('[name="'+n+'"]:checked');return e?e.value:''}
+function text(){
+let t='HEALTH INSURANCE – PROPOSAL FORM\\n\\n';
+t+='1. Who would you like to insure? '+sel('cover')+'\\n\\n';
+t+='2. AGE / DATE OF BIRTH\\nSelf: '+val('self')+'\\nSpouse: '+val('spouse')+'\\nChild 1: '+val('child1')+'\\nChild 2: '+val('child2')+'\\nParent 1: '+val('parent1')+'\\nParent 2: '+val('parent2')+'\\n\\n';
+t+='3. Occupation: '+sel('occupation')+(sel('occupation')==='Other'?' - '+val('occupationOther'):'')+'\\n\\n';
+t+='4. PED – LAST 36 MONTHS: '+sel('ped')+'\\n'; if(sel('ped')==='YES')t+='Person: '+val('pedPerson')+'\\nDisease / Condition: '+val('pedCondition')+'\\nDiagnosed since: '+val('pedSince')+'\\nCurrent treatment / medication: '+val('pedTreatment')+'\\n'; 
+t+='\\n5. REGULAR MEDICATION / TREATMENT – LAST 36 MONTHS: '+sel('med')+'\\n'; if(sel('med')==='YES')t+='Person: '+val('medPerson')+'\\nCondition / Treatment: '+val('medCondition')+'\\nMedication / Follow-up details: '+val('medDetailsText')+'\\n';
+t+='\\n6. HOSPITALISATION / SURGERY – LAST 36 MONTHS: '+sel('hospital')+'\\n'; if(sel('hospital')==='YES')t+='Person: '+val('hospitalPerson')+'\\nDiagnosis / Reason: '+val('hospitalReason')+'\\nHospitalisation / Procedure: '+val('hospitalProcedure')+'\\nYear: '+val('hospitalYear')+'\\n';
+t+='\\n7. PENDING / PLANNED TREATMENT: '+sel('pending')+'\\n'; if(sel('pending')==='YES')t+='Person: '+val('pendingPerson')+'\\nInvestigation / Surgery / Treatment: '+val('pendingTreatment')+'\\nExpected date: '+val('pendingDate')+'\\n';
+t+='\\nDECLARATION\\nI/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.\\n\\n';
+t+='Name: '+val('name')+'\\nMobile: '+val('mobile')+'\\nDate: '+val('date')+'\\nSignature: '+val('signature');
+return t;
+}
+function sendWhatsApp(){window.open('https://wa.me/917022021315?text='+encodeURIComponent(text()),'_blank')}
+function downloadPDF(){
+const original=document.body.innerHTML;
+const source=document.getElementById('formPage');
+
+function esc(v){
+ return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function answer(name){
+ const e=source.querySelector('[name="'+name+'"]');
+ return e ? e.value : '';
+}
+function selected(name){
+ const e=source.querySelector('[name="'+name+'"]:checked');
+ return e ? e.value : '';
+}
+function checked(name){
+ const e=source.querySelector('[name="'+name+'"]:checked');
+ return e ? '☑ '+e.value : '☐';
+}
+function row(label,value){
+ return '<tr><td class="pdf-label">'+esc(label)+'</td><td class="pdf-value">'+esc(value)+'</td></tr>';
+}
+
+let cover=selected('cover');
+let occupation=selected('occupation');
+if(occupation==='Other' && answer('occupationOther')) occupation+=' - '+answer('occupationOther');
+
+let ageRows='';
+[['Self','self'],['Spouse','spouse'],['Child 1','child1'],['Child 2','child2'],['Parent 1','parent1'],['Parent 2','parent2']].forEach(function(x){
+ ageRows+=row(x[0],answer(x[1]));
+});
+
+let pedRows=checked('ped')==='☑ YES'
+ ? row('Person',answer('pedPerson'))+row('Disease / Condition',answer('pedCondition'))+row('Diagnosed since',answer('pedSince'))+row('Current treatment / medication',answer('pedTreatment'))
+ : row('Answer','NO');
+
+let medRows=checked('med')==='☑ YES'
+ ? row('Person',answer('medPerson'))+row('Condition / Treatment',answer('medCondition'))+row('Medication / Follow-up details',answer('medDetailsText'))
+ : row('Answer','NO');
+
+let hospitalRows=checked('hospital')==='☑ YES'
+ ? row('Person',answer('hospitalPerson'))+row('Diagnosis / Reason',answer('hospitalReason'))+row('Hospitalisation / Procedure',answer('hospitalProcedure'))+row('Year',answer('hospitalYear'))
+ : row('Answer','NO');
+
+let pendingRows=checked('pending')==='☑ YES'
+ ? row('Person',answer('pendingPerson'))+row('Investigation / Surgery / Treatment',answer('pendingTreatment'))+row('Expected date',answer('pendingDate'))
+ : row('Answer','NO');
+
+document.body.innerHTML=
+'<div class="pdf-doc">'+
+'<div class="pdf-head"><h1>HEALTH INSURANCE – PROPOSAL FORM</h1><div>Preliminary Questionnaire</div></div>'+
+'<table class="pdf-table">'+
+'<tr><th colspan="2">1. Who would you like to insure?</th></tr>'+row('Cover Required',cover)+
+'<tr><th colspan="2">2. Age / Date of Birth of persons to be insured</th></tr>'+
+'<tr><td class="pdf-label">Member</td><td class="pdf-value"><b>Age / DOB</b></td></tr>'+ageRows+
+'<tr><th colspan="2">3. Occupation</th></tr>'+row('Occupation',occupation)+
+'<tr><th colspan="2">4. Pre-Existing Disease (PED) or medical condition during the last 36 months?</th></tr>'+row('Answer',checked('ped'))+pedRows+
+'<tr><th colspan="2">5. Regular medication / treatment / consultation / medical follow-up during the last 36 months?</th></tr>'+row('Answer',checked('med'))+medRows+
+'<tr><th colspan="2">6. Hospitalised or undergone any surgery / procedure during the last 36 months?</th></tr>'+row('Answer',checked('hospital'))+hospitalRows+
+'<tr><th colspan="2">7. Investigation, surgery or specialised treatment pending or planned?</th></tr>'+row('Answer',checked('pending'))+pendingRows+
+'</table>'+
+'<div class="pdf-declaration"><b>Declaration</b><br>I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.</div>'+
+'<table class="pdf-sign">'+
+row('Name',answer('name'))+row('Mobile',answer('mobile'))+
+row('Date',answer('date'))+row('Signature',answer('signature'))+
+'</table>'+
+'</div>'+
+'<style>'+
+'@page{size:A4;margin:12mm}'+
+'body{margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#222}'+
+'.pdf-doc{max-width:780px;margin:auto;font-size:10pt;line-height:1.35}'+
+'.pdf-head{text-align:center;border-bottom:2px solid #1769aa;padding-bottom:8px;margin-bottom:12px}.pdf-head h1{font-size:17pt;margin:0 0 3px}.pdf-head div{font-size:9pt;color:#666}'+
+'.pdf-table,.pdf-sign{width:100%;border-collapse:collapse;margin-bottom:12px;page-break-inside:auto}'+
+'.pdf-table th{background:#eaf1f6;text-align:left;font-size:10pt;padding:7px 8px;border:1px solid #777}.pdf-table td,.pdf-sign td{border:1px solid #888;padding:6px 8px;vertical-align:top}'+
+'.pdf-label{width:36%;font-weight:600;background:#fafafa}.pdf-value{width:64%;white-space:pre-wrap;word-break:break-word}'+
+'.pdf-declaration{border:1px solid #777;padding:10px;font-size:9pt;line-height:1.45;page-break-inside:avoid;margin-bottom:12px}'+
+'.pdf-sign{page-break-inside:avoid}.pdf-sign .pdf-label{width:25%}.pdf-sign .pdf-value{width:25%;min-height:28px}'+
+'@media print{.pdf-doc{max-width:none}.pdf-table tr{break-inside:avoid}}'+
+'</style>';
+
+window.print();
+document.body.innerHTML=original;
+}
+</script>
+</body>
+</html>
