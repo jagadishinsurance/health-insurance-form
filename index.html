@@ -203,12 +203,15 @@ I/We confirm that the information provided above is true and complete to the bes
 </div>
 </div>
 
+<div style="margin:14px 0 10px;padding:12px 14px;border:1px solid #d9e2ec;border-radius:8px;background:#f7fafc;font-size:13px;line-height:1.5;">
+<strong>Sharing:</strong> On supported mobile devices, you can choose WhatsApp or Email and share the completed PDF as an attachment. If your browser does not support file sharing, the PDF will be downloaded for manual attachment.
+</div>
 <div class="actions">
-<button type="button" onclick="sendPDFToFixedWhatsApp()">Send PDF to WhatsApp – 7022021315</button>
+<button type="button" onclick="sendPDFToFixedWhatsApp()">Send PDF to WhatsApp – </button>
 <button type="button" onclick="sendByEmail()">Send PDF by Email</button>
 <button type="button" class="secondary" onclick="downloadPDF()">Download / Save as PDF</button>
 </div>
-<div class="note">WhatsApp: 7022021315 &nbsp; | &nbsp; Email: jagadishs457@gmail.com, insuranceconsultant@ksca.co.in &nbsp; | &nbsp; PDF contains all completed fields, instructions and selected document names.</div>
+<div class="note">WhatsApp:  &nbsp; | &nbsp; Email: jagadishs457@gmail.com, insuranceconsultant@ksca.co.in &nbsp; | &nbsp; PDF contains all completed fields, instructions and selected document names.</div>
 </form>
 </div>
 
@@ -342,7 +345,18 @@ async function makePDFBlob(){
  if(!window.jspdf||!window.jspdf.jsPDF||!window.jspdf.jsPDF.API.autoTable)throw new Error('PDF library is not available.');
  return buildJsPDF().output('blob');
 }
-async function downloadPDF(){
+async function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadPDF(){
  if(!validateForm())return;
  try{
   const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
@@ -350,25 +364,55 @@ async function downloadPDF(){
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
  }catch(e){alert('Unable to create the PDF. Please try again.');console.error(e)}
 }
-async function sendPDFToFixedWhatsApp(){
- if(!validateForm())return;
- try{
-  const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
-  window.location.href='https://wa.me/917022021315?text='+encodeURIComponent('Please find my completed Insurance Details. I will attach the PDF and supporting documents here.');
- }catch(e){alert('Unable to create the PDF. Please use Download / Save as PDF.');console.error(e)}
+async async function sendPDFToFixedWhatsApp() {
+  try {
+    const pdfBlob = await makePDFBlob();
+    const pdfFile = new File([pdfBlob], 'Insurance_Details.pdf', {type:'application/pdf'});
+
+    // Supported mobile browsers can pass the actual PDF file to the native
+    // share sheet, allowing the user to choose WhatsApp, Email, etc.
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[pdfFile]})) {
+      await navigator.share({
+        title: 'Insurance Details',
+        text: 'Please find the completed Insurance Details PDF attached.',
+        files: [pdfFile]
+      });
+      return;
+    }
+
+    // Fallback: download the PDF for manual attachment.
+    downloadBlob(pdfBlob, 'Insurance_Details.pdf');
+    alert('The PDF has been downloaded. Please choose WhatsApp or Email and attach the PDF before sending.');
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+    alert('Unable to prepare the PDF. Please try again.');
+  }
 }
-async function sendByEmail(){
- if(!validateForm())return;
- try{
-  const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
-  const subject='Insurance Details - '+(val('name')||'New Enquiry');
-  const body='Dear Sir,\\n\\nPlease find the completed Insurance Details form. The PDF has been downloaded to this device. Please attach the PDF and any supporting documents before sending this email.\\n\\nInsurance Issue: '+(sel('issueType')||'')+'\\nBrief Details: '+(val('issueDetails')||'')+'\\n\\nRegards';
-  window.location.href='mailto:jagadishs457@gmail.com,insuranceconsultant@ksca.co.in?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
- }catch(e){alert('Unable to prepare the email. Please use Download / Save as PDF.');console.error(e)}
+async async function sendByEmail() {
+  try {
+    const pdfBlob = await makePDFBlob();
+    const pdfFile = new File([pdfBlob], 'Insurance_Details.pdf', {type:'application/pdf'});
+
+    // Use the native share sheet where file sharing is supported so the
+    // recipient/app can be selected and the PDF travels as an attachment.
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[pdfFile]})) {
+      await navigator.share({
+        title: 'Insurance Details',
+        text: 'Please find the completed Insurance Details PDF attached.',
+        files: [pdfFile]
+      });
+      return;
+    }
+
+    // Fallback for desktop/unsupported browsers.
+    downloadBlob(pdfBlob, 'Insurance_Details.pdf');
+    window.location.href =
+      'mailto:?subject=' + encodeURIComponent('Insurance Details') +
+      '&body=' + encodeURIComponent('Please find the completed Insurance Details PDF attached.');
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+    alert('Unable to prepare the email attachment. Please try again.');
+  }
 }
 </script>
 </body>
