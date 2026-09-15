@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Health Insurance – Proposal Form</title>
+<title>Insurance Details</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial,Helvetica,sans-serif;background:#eef2f5;margin:0;padding:18px;color:#222}
@@ -55,7 +55,7 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 </head>
 <body>
 <div class="page" id="formPage">
-<h1>HEALTH INSURANCE – PROPOSAL FORM</h1>
+<h1>INSURANCE DETAILS</h1>
 <div class="sub">Preliminary Questionnaire</div>
 
 <form id="proposalForm">
@@ -180,6 +180,25 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
   </div>
 </div>
 
+
+<div class="section">
+<h3>Insurance Issue / Assistance Required</h3>
+<div class="options">
+<label><input type="radio" name="issueType" value="Policy Related" required> Policy Related</label>
+<label><input type="radio" name="issueType" value="Claim Related"> Claim Related</label>
+<label><input type="radio" name="issueType" value="Both Policy &amp; Claim"> Both Policy &amp; Claim</label>
+<label><input type="radio" name="issueType" value="General Insurance Enquiry"> General Insurance Enquiry</label>
+</div>
+<div style="margin-top:10px;">
+<label for="issueDetails"><b>Brief Details</b></label>
+<textarea id="issueDetails" name="issueDetails" rows="7"
+  style="width:100%;min-height:150px;box-sizing:border-box;padding:10px;border:1px solid #aaa;border-radius:5px;resize:vertical;font-family:inherit;font-size:13px;"
+  placeholder="Please write your insurance issue / requirement here in detail..."></textarea>
+<div class="doc-help">You may explain the issue in your own words, including relevant dates, policy/claim reference, what happened, and the assistance you require.</div>
+</div>
+
+</div>
+
 <div class="declaration">
 <b>Declaration</b><br>
 I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.
@@ -195,9 +214,10 @@ I/We confirm that the information provided above is true and complete to the bes
 
 <div class="actions">
 <button type="button" onclick="sharePDFOnWhatsApp()">Share PDF on WhatsApp</button>
+<button type="button" onclick="sendByEmail()">Send PDF by Email</button>
 <button type="button" class="secondary" onclick="downloadPDF()">Download / Save as PDF</button>
 </div>
-<div class="note">WhatsApp destination: 7022021315 &nbsp; | &nbsp; The PDF contains all completed fields and is formatted point-by-point in tables.</div>
+<div class="note">WhatsApp: 7022021315 &nbsp; | &nbsp; Email: jagadishs457@gmail.com, insuranceconsultant@ksca.co.in &nbsp; | &nbsp; The PDF contains all completed fields and is formatted point-by-point in tables.</div>
 </form>
 </div>
 
@@ -307,7 +327,7 @@ function buildJsPDF(){
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(16);
-  doc.text('HEALTH INSURANCE – PROPOSAL FORM',pageWidth/2,y,{align:'center'});
+  doc.text('INSURANCE DETAILS',pageWidth/2,y,{align:'center'});
   y+=5;
   doc.setFont('helvetica','normal');
   doc.setFontSize(8.5);
@@ -317,7 +337,7 @@ function buildJsPDF(){
   y+=7;
 
   y=addSectionTitle(doc,'1. Who would you like to insure?',y);
-  y=addTable(doc,[['Cover Required',sel('cover')]],y);
+  y=addTable(doc,[['Cover Required',sel('cover')],['Insurance Issue / Assistance',sel('issueType')],['Brief Details',val('issueDetails')]],y);
 
   y=addSectionTitle(doc,'2. Age / Date of Birth of persons to be insured',y);
   y=addTable(doc,[
@@ -397,7 +417,7 @@ function buildJsPDF(){
     doc.setFont('helvetica','normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100,100,100);
-    doc.text('Health Insurance – Proposal Form',14,291);
+    doc.text('Insurance Details',14,291);
     doc.text('Page '+i+' of '+pages,196,291,{align:'right'});
   }
   doc.setTextColor(30,30,30);
@@ -418,7 +438,7 @@ async function sharePDFOnWhatsApp(){
   if(btn){btn.disabled=true;btn.textContent='Preparing PDF…';}
   try{
     const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Health_Insurance_Proposal.pdf';
+    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
     const pdfFile=new File([blob],filename,{type:'application/pdf'});
     const files=[pdfFile,...getSelectedFiles()];
 
@@ -427,8 +447,8 @@ async function sharePDFOnWhatsApp(){
     if(navigator.share && (!navigator.canShare || navigator.canShare({files:files}))){
       await navigator.share({
         files:files,
-        title:'Health Insurance Proposal Form',
-        text:'Completed Health Insurance Proposal Form with supporting documents'
+        title:'Insurance Details',
+        text:'Completed Insurance Details with supporting documents'
       });
     }else{
       const url=URL.createObjectURL(blob);
@@ -436,7 +456,7 @@ async function sharePDFOnWhatsApp(){
       a.href=url;a.download=filename;
       document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),3000);
-      window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Health Insurance Proposal Form. Please find the PDF and supporting documents attached.'),'_blank');
+      window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Insurance Details. Please find the PDF and supporting documents attached.'),'_blank');
       alert('Your full PDF has been downloaded. Please attach the PDF and the selected supporting documents in WhatsApp and send them to 7022021315.');
     }
   }catch(err){
@@ -449,13 +469,41 @@ async function sharePDFOnWhatsApp(){
   }
 }
 
+
+async function sendByEmail(){
+  if(!validateForm()) return;
+  const btn=event && event.currentTarget ? event.currentTarget : null;
+  if(btn){btn.disabled=true;btn.textContent='Preparing Email…';}
+  try{
+    const blob=await makePDFBlob();
+    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+
+    const recipients='jagadishs457@gmail.com,insuranceconsultant@ksca.co.in';
+    const subject='Insurance Details - '+(val('name')||'New Enquiry');
+    const body='Dear Sir,\\n\\nPlease find the completed Insurance Details form. The PDF has been downloaded to this device. Please attach the PDF and any supporting documents before sending this email.\\n\\nInsurance Issue: '+(sel('issueType')||'')+'\\n\\nRegards';
+    window.location.href='mailto:'+encodeURIComponent(recipients)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+
+    alert('The Insurance Details PDF has been downloaded. Please attach the PDF and supporting documents to the email before sending.');
+  }catch(err){
+    alert('Unable to prepare the email. Please use Download / Save as PDF and email the files manually.');
+    console.error(err);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Send PDF by Email';}
+  }
+}
+
 async function downloadPDF(){
   if(!validateForm()) return;
   const btn=event && event.currentTarget ? event.currentTarget : null;
   if(btn){btn.disabled=true;btn.textContent='Creating PDF…';}
   try{
     const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Health_Insurance_Proposal.pdf';
+    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;a.download=filename;
