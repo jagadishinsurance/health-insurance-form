@@ -39,7 +39,8 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 </head>
 <body>
@@ -182,157 +183,164 @@ function sel(n){const e=document.querySelector('[name="'+n+'"]:checked');return 
 
 function validateForm(){
   const form=document.getElementById('proposalForm');
-  if(!form.checkValidity()){
-    form.reportValidity();
-    return false;
-  }
+  if(!form.checkValidity()){ form.reportValidity(); return false; }
   return true;
 }
 
-function text(){
-let t='HEALTH INSURANCE – PROPOSAL FORM\\n\\n';
-t+='1. Who would you like to insure? '+sel('cover')+'\\n\\n';
-t+='2. AGE / DATE OF BIRTH\\nSelf: '+val('self')+'\\nSpouse: '+val('spouse')+'\\nChild 1: '+val('child1')+'\\nChild 2: '+val('child2')+'\\nParent 1: '+val('parent1')+'\\nParent 2: '+val('parent2')+'\\n\\n';
-t+='3. Occupation: '+sel('occupation')+(sel('occupation')==='Other'?' - '+val('occupationOther'):'')+'\\n\\n';
-t+='4. PED – LAST 36 MONTHS: '+sel('ped')+'\\n';
-if(sel('ped')==='YES')t+='Person: '+val('pedPerson')+'\\nDisease / Condition: '+val('pedCondition')+'\\nDiagnosed since: '+val('pedSince')+'\\nCurrent treatment / medication: '+val('pedTreatment')+'\\n';
-t+='\\n5. REGULAR MEDICATION / TREATMENT – LAST 36 MONTHS: '+sel('med')+'\\n';
-if(sel('med')==='YES')t+='Person: '+val('medPerson')+'\\nCondition / Treatment: '+val('medCondition')+'\\nMedication / Follow-up details: '+val('medDetailsText')+'\\n';
-t+='\\n6. HOSPITALISATION / SURGERY – LAST 36 MONTHS: '+sel('hospital')+'\\n';
-if(sel('hospital')==='YES')t+='Person: '+val('hospitalPerson')+'\\nDiagnosis / Reason: '+val('hospitalReason')+'\\nHospitalisation / Procedure: '+val('hospitalProcedure')+'\\nYear: '+val('hospitalYear')+'\\n';
-t+='\\n7. PENDING / PLANNED TREATMENT: '+sel('pending')+'\\n';
-if(sel('pending')==='YES')t+='Person: '+val('pendingPerson')+'\\nInvestigation / Surgery / Treatment: '+val('pendingTreatment')+'\\nExpected date: '+val('pendingDate')+'\\n';
-t+='\\nDECLARATION\\nI/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.\\n\\n';
-t+='Name: '+val('name')+'\\nMobile: '+val('mobile')+'\\nDate: '+val('date')+'\\nSignature: '+val('signature');
-return t;
+function cleanFileName(s){
+  return (s||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_');
 }
 
-function buildPDFDocument(){
-  function esc(v){
-    return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function answer(name){
-    const e=document.querySelector('[name="'+name+'"]');
-    return e ? e.value : '';
-  }
-  function selected(name){
-    const e=document.querySelector('[name="'+name+'"]:checked');
-    return e ? e.value : '';
-  }
-  function row(label,value){
-    return '<tr><td class="pdf-label">'+esc(label)+'</td><td class="pdf-value">'+esc(value)+'</td></tr>';
-  }
+function addSectionTitle(doc, title, y){
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10.5);
+  doc.setFillColor(234,241,246);
+  doc.rect(14,y,182,8,'F');
+  doc.setDrawColor(120);
+  doc.rect(14,y,182,8,'S');
+  doc.text(title,17,y+5.4);
+  return y+8;
+}
 
-  let cover=selected('cover');
-  let occupation=selected('occupation');
-  if(occupation==='Other' && answer('occupationOther')) occupation+=' - '+answer('occupationOther');
-
-  let ageRows='';
-  [['Self','self'],['Spouse','spouse'],['Child 1','child1'],['Child 2','child2'],['Parent 1','parent1'],['Parent 2','parent2']].forEach(function(x){
-    ageRows+=row(x[0],answer(x[1]));
+function addTable(doc, rows, y){
+  doc.autoTable({
+    startY:y,
+    head:[['Particulars','Details']],
+    body:rows,
+    theme:'grid',
+    margin:{left:14,right:14},
+    tableWidth:182,
+    styles:{font:'helvetica',fontSize:9,cellPadding:3,overflow:'linebreak',valign:'top',lineColor:[120,120,120],lineWidth:0.2},
+    headStyles:{fontStyle:'bold',fillColor:[245,247,249],textColor:[30,30,30],lineColor:[120,120,120]},
+    columnStyles:{0:{cellWidth:66,fontStyle:'bold'},1:{cellWidth:116}},
+    pageBreak:'auto',
+    rowPageBreak:'avoid'
   });
+  return doc.lastAutoTable.finalY+5;
+}
 
-  let pedRows=selected('ped')==='YES'
-    ? row('Person',answer('pedPerson'))+row('Disease / Condition',answer('pedCondition'))+row('Diagnosed since',answer('pedSince'))+row('Current treatment / medication',answer('pedTreatment'))
-    : row('Answer','NO');
+function addAnswerSection(doc, number, title, answer, detailRows, y){
+  y=addSectionTitle(doc, number+'. '+title, y);
+  const rows=[['Answer',answer||'']];
+  if(detailRows && detailRows.length) rows.push(...detailRows);
+  return addTable(doc,rows,y);
+}
 
-  let medRows=selected('med')==='YES'
-    ? row('Person',answer('medPerson'))+row('Condition / Treatment',answer('medCondition'))+row('Medication / Follow-up details',answer('medDetailsText'))
-    : row('Answer','NO');
+function buildJsPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  const pageWidth=210;
+  let y=14;
 
-  let hospitalRows=selected('hospital')==='YES'
-    ? row('Person',answer('hospitalPerson'))+row('Diagnosis / Reason',answer('hospitalReason'))+row('Hospitalisation / Procedure',answer('hospitalProcedure'))+row('Year',answer('hospitalYear'))
-    : row('Answer','NO');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.text('HEALTH INSURANCE – PROPOSAL FORM',pageWidth/2,y,{align:'center'});
+  y+=5;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(95,95,95);
+  doc.text('Preliminary Questionnaire',pageWidth/2,y,{align:'center'});
+  doc.setTextColor(30,30,30);
+  y+=7;
 
-  let pendingRows=selected('pending')==='YES'
-    ? row('Person',answer('pendingPerson'))+row('Investigation / Surgery / Treatment',answer('pendingTreatment'))+row('Expected date',answer('pendingDate'))
-    : row('Answer','NO');
+  y=addSectionTitle(doc,'1. Who would you like to insure?',y);
+  y=addTable(doc,[['Cover Required',sel('cover')]],y);
 
-  const wrapper=document.createElement('div');
-  wrapper.id='pdfCapture';
-  wrapper.innerHTML=
-  '<div class="pdf-doc">'+
-  '<div class="pdf-head"><h1>HEALTH INSURANCE – PROPOSAL FORM</h1><div>Preliminary Questionnaire</div></div>'+
-  '<table class="pdf-table">'+
-  '<tr><th colspan="2">1. Who would you like to insure?</th></tr>'+row('Cover Required',cover)+
-  '<tr><th colspan="2">2. Age / Date of Birth of persons to be insured</th></tr>'+
-  '<tr><td class="pdf-label">Member</td><td class="pdf-value"><b>Age / DOB</b></td></tr>'+ageRows+
-  '<tr><th colspan="2">3. Occupation</th></tr>'+row('Occupation',occupation)+
-  '<tr><th colspan="2">4. Pre-Existing Disease (PED) or medical condition during the last 36 months?</th></tr>'+row('Answer',selected('ped'))+pedRows+
-  '<tr><th colspan="2">5. Regular medication / treatment / consultation / medical follow-up during the last 36 months?</th></tr>'+row('Answer',selected('med'))+medRows+
-  '<tr><th colspan="2">6. Hospitalised or undergone any surgery / procedure during the last 36 months?</th></tr>'+row('Answer',selected('hospital'))+hospitalRows+
-  '<tr><th colspan="2">7. Investigation, surgery or specialised treatment pending or planned?</th></tr>'+row('Answer',selected('pending'))+pendingRows+
-  '</table>'+
-  '<div class="pdf-declaration"><b>Declaration</b><br>I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.</div>'+
-  '<table class="pdf-sign">'+
-  row('Name',answer('name'))+row('Mobile',answer('mobile'))+
-  row('Date',answer('date'))+row('Signature',answer('signature'))+
-  '</table>'+
-  '</div>';
+  y=addSectionTitle(doc,'2. Age / Date of Birth of persons to be insured',y);
+  y=addTable(doc,[
+    ['Self',val('self')],
+    ['Spouse',val('spouse')],
+    ['Child 1',val('child1')],
+    ['Child 2',val('child2')],
+    ['Parent 1',val('parent1')],
+    ['Parent 2',val('parent2')]
+  ],y);
 
-  wrapper.style.position='fixed';
-  wrapper.style.left='-10000px';
-  wrapper.style.top='0';
-  wrapper.style.width='780px';
-  wrapper.style.background='#fff';
-  wrapper.style.zIndex='-1';
-  document.body.appendChild(wrapper);
+  let occ=sel('occupation');
+  if(occ==='Other' && val('occupationOther')) occ+=' - '+val('occupationOther');
+  y=addSectionTitle(doc,'3. Occupation',y);
+  y=addTable(doc,[['Occupation',occ]],y);
 
-  const style=document.createElement('style');
-  style.id='pdfCaptureStyle';
-  style.textContent=
-  '#pdfCapture{font-family:Arial,Helvetica,sans-serif;color:#222;font-size:10pt;line-height:1.35}'+
-  '#pdfCapture .pdf-doc{width:780px;padding:12px;background:#fff}'+
-  '#pdfCapture .pdf-head{text-align:center;border-bottom:2px solid #1769aa;padding-bottom:8px;margin-bottom:12px}'+
-  '#pdfCapture .pdf-head h1{font-size:17pt;margin:0 0 3px}'+
-  '#pdfCapture .pdf-head div{font-size:9pt;color:#666}'+
-  '#pdfCapture .pdf-table,#pdfCapture .pdf-sign{width:100%;border-collapse:collapse;margin-bottom:12px}'+
-  '#pdfCapture .pdf-table th{background:#eaf1f6;text-align:left;font-size:10pt;padding:7px 8px;border:1px solid #777}'+
-  '#pdfCapture .pdf-table td,#pdfCapture .pdf-sign td{border:1px solid #888;padding:6px 8px;vertical-align:top}'+
-  '#pdfCapture .pdf-label{width:36%;font-weight:600;background:#fafafa}'+
-  '#pdfCapture .pdf-value{width:64%;white-space:pre-wrap;word-break:break-word}'+
-  '#pdfCapture .pdf-declaration{border:1px solid #777;padding:10px;font-size:9pt;line-height:1.45;margin-bottom:12px}'+
-  '#pdfCapture .pdf-sign .pdf-label{width:25%}'+
-  '#pdfCapture .pdf-sign .pdf-value{width:25%;min-height:28px}';
-  document.head.appendChild(style);
+  let ped=[];
+  if(sel('ped')==='YES'){
+    ped=[['Person',val('pedPerson')],['Disease / Condition',val('pedCondition')],
+         ['Diagnosed since',val('pedSince')],['Current treatment / medication',val('pedTreatment')]];
+  }
+  y=addAnswerSection(doc,4,'Pre-Existing Disease (PED) or medical condition during the last 36 months?',sel('ped'),ped,y);
 
-  return {wrapper, style};
+  let med=[];
+  if(sel('med')==='YES'){
+    med=[['Person',val('medPerson')],['Condition / Treatment',val('medCondition')],
+         ['Medication / Follow-up details',val('medDetailsText')]];
+  }
+  y=addAnswerSection(doc,5,'Regular medication / treatment / consultation / medical follow-up during the last 36 months?',sel('med'),med,y);
+
+  let hosp=[];
+  if(sel('hospital')==='YES'){
+    hosp=[['Person',val('hospitalPerson')],['Diagnosis / Reason',val('hospitalReason')],
+          ['Hospitalisation / Procedure',val('hospitalProcedure')],['Year',val('hospitalYear')]];
+  }
+  y=addAnswerSection(doc,6,'Hospitalised or undergone any surgery / procedure during the last 36 months?',sel('hospital'),hosp,y);
+
+  let pending=[];
+  if(sel('pending')==='YES'){
+    pending=[['Person',val('pendingPerson')],
+             ['Investigation / Surgery / Treatment',val('pendingTreatment')],
+             ['Expected date',val('pendingDate')]];
+  }
+  y=addAnswerSection(doc,7,'Investigation, surgery or specialised treatment pending or planned?',sel('pending'),pending,y);
+
+  // Declaration and applicant details. AutoTable automatically creates additional pages if needed.
+  y+=1;
+  if(y>260){doc.addPage();y=16;}
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10.5);
+  doc.text('Declaration',14,y);
+  y+=5;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.7);
+  const declaration='I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.';
+  const lines=doc.splitTextToSize(declaration,182);
+  doc.text(lines,14,y);
+  y+=lines.length*4+5;
+
+  y=addTable(doc,[
+    ['Name',val('name')],
+    ['Mobile',val('mobile')],
+    ['Date',val('date')],
+    ['Signature',val('signature')]
+  ],y);
+
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100,100,100);
+    doc.text('Health Insurance – Proposal Form',14,291);
+    doc.text('Page '+i+' of '+pages,196,291,{align:'right'});
+  }
+  doc.setTextColor(30,30,30);
+  return doc;
 }
 
 async function makePDFBlob(){
-  if(typeof html2pdf==='undefined'){
+  if(!window.jspdf || !window.jspdf.jsPDF || !window.jspdf.jsPDF.API.autoTable){
     throw new Error('PDF library is not available. Please check your internet connection and try again.');
   }
-  const built=buildPDFDocument();
-  const element=built.wrapper.querySelector('.pdf-doc');
-  const name=(val('name')||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_');
-  const options={
-    margin:8,
-    filename:name+'_Health_Insurance_Proposal.pdf',
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['css','legacy']}
-  };
-  try{
-    return await html2pdf().set(options).from(element).outputPdf('blob');
-  }finally{
-    built.wrapper.remove();
-    built.style.remove();
-  }
+  const doc=buildJsPDF();
+  const blob=doc.output('blob');
+  return blob;
 }
 
 async function sharePDFOnWhatsApp(){
   if(!validateForm()) return;
-
   const btn=event && event.currentTarget ? event.currentTarget : null;
   if(btn){btn.disabled=true;btn.textContent='Preparing PDF…';}
-
   try{
     const blob=await makePDFBlob();
-    const filename=((val('name')||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_'))+'_Health_Insurance_Proposal.pdf';
+    const filename=cleanFileName(val('name'))+'_Health_Insurance_Proposal.pdf';
     const file=new File([blob],filename,{type:'application/pdf'});
-
     if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
       await navigator.share({
         files:[file],
@@ -342,18 +350,15 @@ async function sharePDFOnWhatsApp(){
     }else{
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
-      a.href=url;
-      a.download=filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      a.href=url;a.download=filename;
+      document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),3000);
       window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Health Insurance Proposal Form. Please find the PDF attached.'),'_blank');
-      alert('The PDF has been downloaded. Please attach that PDF in WhatsApp and send it to 7022021315.');
+      alert('The full PDF has been downloaded. Please attach that PDF in WhatsApp and send it to 7022021315.');
     }
   }catch(err){
     if(err && err.name!=='AbortError'){
-      alert('Unable to share the PDF automatically. Please use Download / Save as PDF and attach the PDF in WhatsApp.');
+      alert('Unable to share the PDF automatically. Please use Download / Save as PDF.');
       console.error(err);
     }
   }finally{
@@ -367,14 +372,11 @@ async function downloadPDF(){
   if(btn){btn.disabled=true;btn.textContent='Creating PDF…';}
   try{
     const blob=await makePDFBlob();
-    const filename=((val('name')||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_'))+'_Health_Insurance_Proposal.pdf';
+    const filename=cleanFileName(val('name'))+'_Health_Insurance_Proposal.pdf';
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),3000);
   }catch(err){
     alert('Unable to create the PDF. Please try again.');
