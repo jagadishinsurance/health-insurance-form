@@ -37,6 +37,16 @@ button.secondary{background:#fff;color:#1769aa;border:2px solid #1769aa}
 body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;border-radius:0}
 .actions,.note{display:none}.question{break-inside:avoid}
 }
+
+.doc-upload{margin-top:18px;border:1px solid #cfd6dc;border-radius:6px;overflow:hidden;page-break-inside:avoid}
+.doc-upload .title{font-weight:700;font-size:13.5px;background:#eef3f7;padding:9px 11px;line-height:1.45}
+.doc-upload .body{padding:11px}
+.doc-list{margin:9px 0 0;padding:0;list-style:none}
+.doc-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #ddd;padding:7px 8px;margin:5px 0;border-radius:4px;background:#fafafa;font-size:12px}
+.doc-remove{border:0;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:12px}
+.doc-help{font-size:11.5px;color:#555;line-height:1.45;margin-top:7px}
+.doc-privacy{font-size:11px;color:#555;background:#f7f7f7;border-left:3px solid #888;padding:7px 9px;margin-top:9px;line-height:1.45}
+
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -155,6 +165,21 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 </div>
 </div></div>
 
+
+<div class="doc-upload">
+  <div class="title">Supporting Documents – Optional</div>
+  <div class="body">
+    <div>Please upload relevant documents, if available. You may select multiple files.</div>
+    <div class="doc-help"><b>Suggested documents:</b> Medical records / medical reports, previous health insurance policy copy, renewal notice, discharge summary or surgery records, claim-related documents, PAN Card, Aadhaar Card, and any other document relevant to your health insurance requirement.</div>
+    <input id="supportingFiles" type="file" multiple
+      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+      onchange="showSelectedFiles()">
+    <ul id="docList" class="doc-list"></ul>
+    <div class="doc-help">You can select up to 10 files. For easier sharing, keep each file preferably below 10 MB.</div>
+    <div class="doc-privacy"><b>Privacy:</b> Upload only documents you are comfortable sharing. Files are not uploaded to this website; they remain on your device until you choose to share them.</div>
+  </div>
+</div>
+
 <div class="declaration">
 <b>Declaration</b><br>
 I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.
@@ -189,6 +214,54 @@ function validateForm(){
 
 function cleanFileName(s){
   return (s||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_');
+}
+
+function getSelectedFiles(){
+  const input=document.getElementById('supportingFiles');
+  return input ? Array.from(input.files || []) : [];
+}
+
+function showSelectedFiles(){
+  const input=document.getElementById('supportingFiles');
+  const list=document.getElementById('docList');
+  if(!input || !list) return;
+  const files=Array.from(input.files || []);
+  if(files.length>10){
+    alert('Please select a maximum of 10 documents.');
+    input.value='';
+    list.innerHTML='';
+    return;
+  }
+  const tooLarge=files.find(f=>f.size>10*1024*1024);
+  if(tooLarge){
+    alert('Each document should preferably be below 10 MB. Please select smaller files.');
+    input.value='';
+    list.innerHTML='';
+    return;
+  }
+  list.innerHTML='';
+  files.forEach((f,i)=>{
+    const li=document.createElement('li');
+    const name=document.createElement('span');
+    name.textContent=f.name+' ('+Math.ceil(f.size/1024)+' KB)';
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='doc-remove';
+    b.textContent='Remove';
+    b.onclick=()=>removeSelectedFile(i);
+    li.appendChild(name);
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+}
+
+function removeSelectedFile(index){
+  const input=document.getElementById('supportingFiles');
+  if(!input) return;
+  const dt=new DataTransfer();
+  Array.from(input.files).forEach((f,i)=>{if(i!==index)dt.items.add(f)});
+  input.files=dt.files;
+  showSelectedFiles();
 }
 
 function addSectionTitle(doc, title, y){
@@ -290,7 +363,14 @@ function buildJsPDF(){
   }
   y=addAnswerSection(doc,7,'Investigation, surgery or specialised treatment pending or planned?',sel('pending'),pending,y);
 
-  // Declaration and applicant details. AutoTable automatically creates additional pages if needed.
+  const docs=getSelectedFiles();
+  if(docs.length){
+    y+=1;
+    if(y>260){doc.addPage();y=16;}
+    y=addSectionTitle(doc,'Supporting Documents – Selected',y);
+    y=addTable(doc,docs.map((f,i)=>[String(i+1),f.name]),y);
+  }
+
   y+=1;
   if(y>260){doc.addPage();y=16;}
   doc.setFont('helvetica','bold');
@@ -329,8 +409,7 @@ async function makePDFBlob(){
     throw new Error('PDF library is not available. Please check your internet connection and try again.');
   }
   const doc=buildJsPDF();
-  const blob=doc.output('blob');
-  return blob;
+  return doc.output('blob');
 }
 
 async function sharePDFOnWhatsApp(){
@@ -340,12 +419,16 @@ async function sharePDFOnWhatsApp(){
   try{
     const blob=await makePDFBlob();
     const filename=cleanFileName(val('name'))+'_Health_Insurance_Proposal.pdf';
-    const file=new File([blob],filename,{type:'application/pdf'});
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    const pdfFile=new File([blob],filename,{type:'application/pdf'});
+    const files=[pdfFile,...getSelectedFiles()];
+
+    // Prefer the native file-share sheet. This allows PDF + supporting documents
+    // to be shared together to WhatsApp on devices/browsers that support file sharing.
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:files}))){
       await navigator.share({
-        files:[file],
+        files:files,
         title:'Health Insurance Proposal Form',
-        text:'Completed Health Insurance Proposal Form'
+        text:'Completed Health Insurance Proposal Form with supporting documents'
       });
     }else{
       const url=URL.createObjectURL(blob);
@@ -353,12 +436,12 @@ async function sharePDFOnWhatsApp(){
       a.href=url;a.download=filename;
       document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),3000);
-      window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Health Insurance Proposal Form. Please find the PDF attached.'),'_blank');
-      alert('The full PDF has been downloaded. Please attach that PDF in WhatsApp and send it to 7022021315.');
+      window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Health Insurance Proposal Form. Please find the PDF and supporting documents attached.'),'_blank');
+      alert('Your full PDF has been downloaded. Please attach the PDF and the selected supporting documents in WhatsApp and send them to 7022021315.');
     }
   }catch(err){
     if(err && err.name!=='AbortError'){
-      alert('Unable to share the PDF automatically. Please use Download / Save as PDF.');
+      alert('Unable to share the files automatically. Please use Download / Save as PDF and attach the PDF and documents in WhatsApp.');
       console.error(err);
     }
   }finally{
