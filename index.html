@@ -20,24 +20,20 @@ h1{text-align:center;font-size:20px;margin:0 0 4px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border:1px solid #888;padding:7px 8px}
 th{background:#f3f3f3;text-align:left}
-input[type=text],textarea,select{font-family:inherit;font-size:13px}
+input[type=text],input[type=tel],input[type=date],textarea{font-family:inherit;font-size:13px}
 .text{width:100%;border:0;border-bottom:1px solid #777;padding:3px;background:transparent;outline:none}
 .details{display:none;margin-top:10px;border-top:1px dashed #bbb;padding-top:9px}
 .detail-table td:first-child{width:35%;font-weight:600;background:#fafafa}
 .detail-table input,.detail-table textarea{width:100%;border:0;outline:none;padding:3px;background:transparent}
 .detail-table textarea{min-height:40px;resize:vertical}
+.issue-table td:first-child{width:38%;font-weight:600;background:#fafafa}
+.issue-details{width:100%;min-height:150px;padding:9px;border:1px solid #aaa;border-radius:5px;resize:vertical}
 .declaration{border:1px solid #888;padding:12px;margin-top:5px;font-size:12px;line-height:1.5;page-break-inside:avoid}
 .signature{margin-top:16px}
 .actions{display:flex;gap:10px;margin-top:20px}
 button{flex:1;border:0;border-radius:6px;padding:12px;background:#1769aa;color:#fff;font-weight:700;cursor:pointer}
 button.secondary{background:#fff;color:#1769aa;border:2px solid #1769aa}
 .note{text-align:center;color:#666;font-size:11px;margin-top:9px}
-@media(max-width:600px){.page{padding:20px 15px}.grid{grid-template-columns:1fr}.actions{flex-direction:column}}
-@media print{
-body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;border-radius:0}
-.actions,.note{display:none}.question{break-inside:avoid}
-}
-
 .doc-upload{margin-top:18px;border:1px solid #cfd6dc;border-radius:6px;overflow:hidden;page-break-inside:avoid}
 .doc-upload .title{font-weight:700;font-size:13.5px;background:#eef3f7;padding:9px 11px;line-height:1.45}
 .doc-upload .body{padding:11px}
@@ -46,15 +42,14 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 .doc-remove{border:0;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:12px}
 .doc-help{font-size:11.5px;color:#555;line-height:1.45;margin-top:7px}
 .doc-privacy{font-size:11px;color:#555;background:#f7f7f7;border-left:3px solid #888;padding:7px 9px;margin-top:9px;line-height:1.45}
-
+@media(max-width:600px){.page{padding:20px 15px}.grid{grid-template-columns:1fr}.actions{flex-direction:column}}
+@media print{body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;border-radius:0}.actions,.note{display:none}.question,.doc-upload,.declaration{break-inside:avoid}}
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
 </head>
 <body>
-<div class="page" id="formPage">
+<div class="page">
 <h1>INSURANCE DETAILS</h1>
 <div class="sub">Preliminary Questionnaire</div>
 
@@ -70,6 +65,24 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 <label class="option"><input type="radio" name="cover" value="Parents">Parents</label>
 <label class="option"><input type="radio" name="cover" value="Family + Parents">Family + Parents</label>
 </div>
+</div></div>
+
+<div class="question">
+<div class="qtitle">Insurance Issue / Assistance Required</div>
+<div class="qbody">
+
+<div style="font-weight:700;font-size:13px;margin-bottom:9px;">Insurance Issue / Assistance Required</div>
+<div class="options" style="display:block;">
+<label class="option" style="display:block;margin-bottom:8px;"><input type="radio" name="issueType" value="Policy Related" required> Policy Related</label>
+<label class="option" style="display:block;margin-bottom:8px;"><input type="radio" name="issueType" value="Claim Related"> Claim Related</label>
+<label class="option" style="display:block;margin-bottom:8px;"><input type="radio" name="issueType" value="Both Policy &amp; Claim"> Both Policy &amp; Claim</label>
+<label class="option" style="display:block;margin-bottom:8px;"><input type="radio" name="issueType" value="General Insurance Enquiry"> General Insurance Enquiry</label>
+</div>
+
+<div style="margin-top:16px;font-weight:700;font-size:13px;">1. Brief Details</div>
+<div class="doc-help" style="margin-bottom:7px;">Please explain the issue or assistance required in your own words. You may mention relevant dates, policy / claim reference, what happened, and the assistance you require.</div>
+<textarea id="issueDetails" name="issueDetails" class="issue-details" rows="8" placeholder="Write your insurance issue / requirement here in detail..."></textarea>
+
 </div></div>
 
 <div class="question">
@@ -95,7 +108,7 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 <label class="option"><input type="radio" name="occupation" value="Business / Self-employed">Business / Self-employed</label>
 <label class="option"><input type="radio" name="occupation" value="Retired">Retired</label>
 <label class="option"><input type="radio" name="occupation" value="Homemaker">Homemaker</label>
-<label class="option"><input type="radio" name="occupation" value="Other">Other: <input type="text" name="occupationOther" class="text" style="width:130px"></label>
+<label class="option"><input class="text" style="width:130px" type="text" name="occupationOther" placeholder="Other"></label>
 </div>
 </div></div>
 
@@ -165,38 +178,16 @@ body{background:#fff;padding:0}.page{max-width:none;box-shadow:none;padding:0;bo
 </div>
 </div></div>
 
-
 <div class="doc-upload">
-  <div class="title">Supporting Documents – Optional</div>
-  <div class="body">
-    <div>Please upload relevant documents, if available. You may select multiple files.</div>
-    <div class="doc-help"><b>Suggested documents:</b> Medical records / medical reports, previous health insurance policy copy, renewal notice, discharge summary or surgery records, claim-related documents, PAN Card, Aadhaar Card, and any other document relevant to your health insurance requirement.</div>
-    <input id="supportingFiles" type="file" multiple
-      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-      onchange="showSelectedFiles()">
-    <ul id="docList" class="doc-list"></ul>
-    <div class="doc-help">You can select up to 10 files. For easier sharing, keep each file preferably below 10 MB.</div>
-    <div class="doc-privacy"><b>Privacy:</b> Upload only documents you are comfortable sharing. Files are not uploaded to this website; they remain on your device until you choose to share them.</div>
-  </div>
+<div class="title">Supporting Documents – Optional</div>
+<div class="body">
+<div>Please upload relevant documents, if available. You may select multiple files.</div>
+<div class="doc-help"><b>Suggested documents:</b> Medical records / medical reports, previous health insurance policy copy, renewal notice, discharge summary or surgery records, claim-related documents, PAN Card, Aadhaar Card, and any other document relevant to your health insurance requirement.</div>
+<input id="supportingFiles" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="showSelectedFiles()">
+<ul id="docList" class="doc-list"></ul>
+<div class="doc-help"><b>File instruction:</b> You can select up to 10 files. For easier sharing, keep each file preferably below 10 MB.</div>
+<div class="doc-privacy"><b>Privacy:</b> Upload only documents you are comfortable sharing. Files are not uploaded to this website; they remain on your device until you choose to share them.</div>
 </div>
-
-
-<div class="section">
-<h3>Insurance Issue / Assistance Required</h3>
-<div class="options">
-<label><input type="radio" name="issueType" value="Policy Related" required> Policy Related</label>
-<label><input type="radio" name="issueType" value="Claim Related"> Claim Related</label>
-<label><input type="radio" name="issueType" value="Both Policy &amp; Claim"> Both Policy &amp; Claim</label>
-<label><input type="radio" name="issueType" value="General Insurance Enquiry"> General Insurance Enquiry</label>
-</div>
-<div style="margin-top:10px;">
-<label for="issueDetails"><b>Brief Details</b></label>
-<textarea id="issueDetails" name="issueDetails" rows="7"
-  style="width:100%;min-height:150px;box-sizing:border-box;padding:10px;border:1px solid #aaa;border-radius:5px;resize:vertical;font-family:inherit;font-size:13px;"
-  placeholder="Please write your insurance issue / requirement here in detail..."></textarea>
-<div class="doc-help">You may explain the issue in your own words, including relevant dates, policy/claim reference, what happened, and the assistance you require.</div>
-</div>
-
 </div>
 
 <div class="declaration">
@@ -206,315 +197,178 @@ I/We confirm that the information provided above is true and complete to the bes
 <div class="grid">
 <label>Name<br><input class="text" name="name"></label>
 <label>Mobile<br><input class="text" name="mobile"></label>
-<label>Date<br><input class="text" name="date"></label>
+<label>Date<br><input class="text" name="date" type="date"></label>
 <label>Signature<br><input class="text" name="signature"></label>
 </div>
 </div>
 </div>
 
 <div class="actions">
-<button type="button" onclick="sharePDFOnWhatsApp()">Share PDF on WhatsApp</button>
+<button type="button" onclick="sendPDFToFixedWhatsApp()">Send PDF to WhatsApp – 7022021315</button>
 <button type="button" onclick="sendByEmail()">Send PDF by Email</button>
 <button type="button" class="secondary" onclick="downloadPDF()">Download / Save as PDF</button>
 </div>
-<div class="note">WhatsApp: 7022021315 &nbsp; | &nbsp; Email: jagadishs457@gmail.com, insuranceconsultant@ksca.co.in &nbsp; | &nbsp; The PDF contains all completed fields and is formatted point-by-point in tables.</div>
+<div class="note">WhatsApp: 7022021315 &nbsp; | &nbsp; Email: jagadishs457@gmail.com, insuranceconsultant@ksca.co.in &nbsp; | &nbsp; PDF contains all completed fields, instructions and selected document names.</div>
 </form>
 </div>
 
 <script>
-function toggle(id,show){document.getElementById(id).style.display=show?'block':'none'}
+function toggle(id,show){const e=document.getElementById(id);if(e)e.style.display=show?'block':'none'}
 function val(n){const e=document.querySelector('[name="'+n+'"]');return e?e.value.trim():''}
 function sel(n){const e=document.querySelector('[name="'+n+'"]:checked');return e?e.value:''}
-
-function validateForm(){
-  const form=document.getElementById('proposalForm');
-  if(!form.checkValidity()){ form.reportValidity(); return false; }
-  return true;
-}
-
-function cleanFileName(s){
-  return (s||'Health_Insurance_Proposal').replace(/[^\w\-]+/g,'_');
-}
-
-function getSelectedFiles(){
-  const input=document.getElementById('supportingFiles');
-  return input ? Array.from(input.files || []) : [];
-}
-
+function validateForm(){const f=document.getElementById('proposalForm');if(!f.checkValidity()){f.reportValidity();return false}return true}
+function cleanFileName(s){return(s||'Insurance_Details').replace(/[^\w\-]+/g,'_')}
+function getSelectedFiles(){const i=document.getElementById('supportingFiles');return i?Array.from(i.files||[]):[]}
 function showSelectedFiles(){
-  const input=document.getElementById('supportingFiles');
-  const list=document.getElementById('docList');
-  if(!input || !list) return;
-  const files=Array.from(input.files || []);
-  if(files.length>10){
-    alert('Please select a maximum of 10 documents.');
-    input.value='';
-    list.innerHTML='';
-    return;
-  }
-  const tooLarge=files.find(f=>f.size>10*1024*1024);
-  if(tooLarge){
-    alert('Each document should preferably be below 10 MB. Please select smaller files.');
-    input.value='';
-    list.innerHTML='';
-    return;
-  }
-  list.innerHTML='';
-  files.forEach((f,i)=>{
-    const li=document.createElement('li');
-    const name=document.createElement('span');
-    name.textContent=f.name+' ('+Math.ceil(f.size/1024)+' KB)';
-    const b=document.createElement('button');
-    b.type='button';
-    b.className='doc-remove';
-    b.textContent='Remove';
-    b.onclick=()=>removeSelectedFile(i);
-    li.appendChild(name);
-    li.appendChild(b);
-    list.appendChild(li);
-  });
+ const input=document.getElementById('supportingFiles'),list=document.getElementById('docList');if(!input||!list)return;
+ const files=Array.from(input.files||[]);
+ if(files.length>10){alert('Please select a maximum of 10 documents.');input.value='';list.innerHTML='';return}
+ const tooLarge=files.find(f=>f.size>10*1024*1024);
+ if(tooLarge){alert('Each document should preferably be below 10 MB. Please select smaller files.');input.value='';list.innerHTML='';return}
+ list.innerHTML='';
+ files.forEach((f,i)=>{
+  const li=document.createElement('li'),s=document.createElement('span'),b=document.createElement('button');
+  s.textContent=f.name+' ('+Math.ceil(f.size/1024)+' KB)';
+  b.type='button';b.className='doc-remove';b.textContent='Remove';b.onclick=()=>removeSelectedFile(i);
+  li.appendChild(s);li.appendChild(b);list.appendChild(li);
+ });
 }
-
 function removeSelectedFile(index){
-  const input=document.getElementById('supportingFiles');
-  if(!input) return;
-  const dt=new DataTransfer();
-  Array.from(input.files).forEach((f,i)=>{if(i!==index)dt.items.add(f)});
-  input.files=dt.files;
-  showSelectedFiles();
+ const input=document.getElementById('supportingFiles');const dt=new DataTransfer();
+ Array.from(input.files).forEach((f,i)=>{if(i!==index)dt.items.add(f)});input.files=dt.files;showSelectedFiles();
 }
 
-function addSectionTitle(doc, title, y){
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(10.5);
-  doc.setFillColor(234,241,246);
-  doc.rect(14,y,182,8,'F');
-  doc.setDrawColor(120);
-  doc.rect(14,y,182,8,'S');
-  doc.text(title,17,y+5.4);
-  return y+8;
+/* PDF renderer:
+   - Preserves the earlier point-by-point table format.
+   - Includes EVERY section in the exact form order.
+   - Includes the complete Supporting Documents instructions.
+   - Includes Insurance Issue AND the full Brief Details field.
+   - NO two-page limit. AutoTable may continue to as many A4 pages as required.
+*/
+function addSection(doc,title,rows,first){
+ doc.autoTable({
+  startY:first?22:(doc.lastAutoTable.finalY+5),
+  head:[[title,'']],
+  body:rows,
+  theme:'grid',
+  margin:{left:14,right:14,top:19,bottom:18},
+  tableWidth:182,
+  pageBreak:'auto',
+  rowPageBreak:'auto',
+  showHead:'everyPage',
+  styles:{font:'helvetica',fontSize:9,cellPadding:3,overflow:'linebreak',valign:'top',lineColor:[125,125,125],lineWidth:0.2},
+  headStyles:{fontStyle:'bold',fillColor:[234,241,246],textColor:[30,30,30],halign:'left',fontSize:10},
+  columnStyles:{0:{cellWidth:66,fontStyle:'bold'},1:{cellWidth:116}},
+  didParseCell:function(data){if(data.section==='head'&&data.column.index===1)data.cell.text=['']}
+ });
+ return doc.lastAutoTable.finalY;
 }
-
-function addTable(doc, rows, y){
-  doc.autoTable({
-    startY:y,
-    head:[['Particulars','Details']],
-    body:rows,
-    theme:'grid',
-    margin:{left:14,right:14},
-    tableWidth:182,
-    styles:{font:'helvetica',fontSize:9,cellPadding:3,overflow:'linebreak',valign:'top',lineColor:[120,120,120],lineWidth:0.2},
-    headStyles:{fontStyle:'bold',fillColor:[245,247,249],textColor:[30,30,30],lineColor:[120,120,120]},
-    columnStyles:{0:{cellWidth:66,fontStyle:'bold'},1:{cellWidth:116}},
-    pageBreak:'auto',
-    rowPageBreak:'avoid'
-  });
-  return doc.lastAutoTable.finalY+5;
-}
-
-function addAnswerSection(doc, number, title, answer, detailRows, y){
-  y=addSectionTitle(doc, number+'. '+title, y);
-  const rows=[['Answer',answer||'']];
-  if(detailRows && detailRows.length) rows.push(...detailRows);
-  return addTable(doc,rows,y);
-}
-
 function buildJsPDF(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
-  const pageWidth=210;
-  let y=14;
+ const {jsPDF}=window.jspdf;
+ const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+ const W=210;
+ doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('INSURANCE DETAILS',W/2,12,{align:'center'});
+ doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(95,95,95);
+ doc.text('Preliminary Questionnaire',W/2,17,{align:'center'});doc.setTextColor(30,30,30);
 
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(16);
-  doc.text('INSURANCE DETAILS',pageWidth/2,y,{align:'center'});
-  y+=5;
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(95,95,95);
-  doc.text('Preliminary Questionnaire',pageWidth/2,y,{align:'center'});
-  doc.setTextColor(30,30,30);
-  y+=7;
+ let first=true;
 
-  y=addSectionTitle(doc,'1. Who would you like to insure?',y);
-  y=addTable(doc,[['Cover Required',sel('cover')],['Insurance Issue / Assistance',sel('issueType')],['Brief Details',val('issueDetails')]],y);
+ addSection(doc,'1. Who would you like to insure?',[
+  ['Cover Required',sel('cover')]
+ ],first);first=false;
 
-  y=addSectionTitle(doc,'2. Age / Date of Birth of persons to be insured',y);
-  y=addTable(doc,[
-    ['Self',val('self')],
-    ['Spouse',val('spouse')],
-    ['Child 1',val('child1')],
-    ['Child 2',val('child2')],
-    ['Parent 1',val('parent1')],
-    ['Parent 2',val('parent2')]
-  ],y);
+ addSection(doc,'Insurance Issue / Assistance Required',[
+  ['Policy Related','' + (sel('issueType')==='Policy Related'?'SELECTED':'')],
+  ['Claim Related','' + (sel('issueType')==='Claim Related'?'SELECTED':'')],
+  ['Both Policy & Claim','' + (sel('issueType')==='Both Policy & Claim'?'SELECTED':'')],
+  ['General Insurance Enquiry','' + (sel('issueType')==='General Insurance Enquiry'?'SELECTED':'')]
+ ],false);
 
-  let occ=sel('occupation');
-  if(occ==='Other' && val('occupationOther')) occ+=' - '+val('occupationOther');
-  y=addSectionTitle(doc,'3. Occupation',y);
-  y=addTable(doc,[['Occupation',occ]],y);
+ addSection(doc,'1. Brief Details',[
+  ['Details',val('issueDetails')]
+ ],false);
 
-  let ped=[];
-  if(sel('ped')==='YES'){
-    ped=[['Person',val('pedPerson')],['Disease / Condition',val('pedCondition')],
-         ['Diagnosed since',val('pedSince')],['Current treatment / medication',val('pedTreatment')]];
-  }
-  y=addAnswerSection(doc,4,'Pre-Existing Disease (PED) or medical condition during the last 36 months?',sel('ped'),ped,y);
+ addSection(doc,'2. Age / Date of Birth of persons to be insured',[
+  ['Self',val('self')],['Spouse',val('spouse')],['Child 1',val('child1')],
+  ['Child 2',val('child2')],['Parent 1',val('parent1')],['Parent 2',val('parent2')]
+ ],false);
 
-  let med=[];
-  if(sel('med')==='YES'){
-    med=[['Person',val('medPerson')],['Condition / Treatment',val('medCondition')],
-         ['Medication / Follow-up details',val('medDetailsText')]];
-  }
-  y=addAnswerSection(doc,5,'Regular medication / treatment / consultation / medical follow-up during the last 36 months?',sel('med'),med,y);
+ let occ=sel('occupation');if(val('occupationOther'))occ+=(occ?' - ':'')+val('occupationOther');
+ addSection(doc,'3. Occupation',[['Occupation',occ]],false);
 
-  let hosp=[];
-  if(sel('hospital')==='YES'){
-    hosp=[['Person',val('hospitalPerson')],['Diagnosis / Reason',val('hospitalReason')],
-          ['Hospitalisation / Procedure',val('hospitalProcedure')],['Year',val('hospitalYear')]];
-  }
-  y=addAnswerSection(doc,6,'Hospitalised or undergone any surgery / procedure during the last 36 months?',sel('hospital'),hosp,y);
+ let ped=[['Answer',sel('ped')],['Person',val('pedPerson')],['Disease / Condition',val('pedCondition')],['Diagnosed since',val('pedSince')],['Current treatment / medication',val('pedTreatment')]];
+ addSection(doc,'4. Has anyone to be insured had any Pre-Existing Disease (PED) or medical condition during the last 36 months?',ped,false);
 
-  let pending=[];
-  if(sel('pending')==='YES'){
-    pending=[['Person',val('pendingPerson')],
-             ['Investigation / Surgery / Treatment',val('pendingTreatment')],
-             ['Expected date',val('pendingDate')]];
-  }
-  y=addAnswerSection(doc,7,'Investigation, surgery or specialised treatment pending or planned?',sel('pending'),pending,y);
+ let med=[['Answer',sel('med')],['Person',val('medPerson')],['Condition / Treatment',val('medCondition')],['Medication / Follow-up details',val('medDetailsText')]];
+ addSection(doc,'5. Has anyone been taking regular medication or undergoing treatment, consultation or medical follow-up during the last 36 months?',med,false);
 
-  const docs=getSelectedFiles();
-  if(docs.length){
-    y+=1;
-    if(y>260){doc.addPage();y=16;}
-    y=addSectionTitle(doc,'Supporting Documents – Selected',y);
-    y=addTable(doc,docs.map((f,i)=>[String(i+1),f.name]),y);
-  }
+ let hosp=[['Answer',sel('hospital')],['Person',val('hospitalPerson')],['Diagnosis / Reason',val('hospitalReason')],['Hospitalisation / Procedure',val('hospitalProcedure')],['Year',val('hospitalYear')]];
+ addSection(doc,'6. Has anyone been hospitalised or undergone any surgery / procedure during the last 36 months?',hosp,false);
 
-  y+=1;
-  if(y>260){doc.addPage();y=16;}
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(10.5);
-  doc.text('Declaration',14,y);
-  y+=5;
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(8.7);
-  const declaration='I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.';
-  const lines=doc.splitTextToSize(declaration,182);
-  doc.text(lines,14,y);
-  y+=lines.length*4+5;
+ let pending=[['Answer',sel('pending')],['Person',val('pendingPerson')],['Investigation / Surgery / Treatment',val('pendingTreatment')],['Expected date',val('pendingDate')]];
+ addSection(doc,'7. Has anyone been advised any investigation, surgery or specialised treatment that is pending or planned?',pending,false);
 
-  y=addTable(doc,[
-    ['Name',val('name')],
-    ['Mobile',val('mobile')],
-    ['Date',val('date')],
-    ['Signature',val('signature')]
-  ],y);
+ // Full supporting-document section: instructions are included even when no file is selected.
+ addSection(doc,'Supporting Documents – Optional',[
+  ['Instruction','Please upload relevant documents, if available. You may select multiple files.'],
+  ['Suggested documents','Medical records / medical reports; previous health insurance policy copy; renewal notice; discharge summary or surgery records; claim-related documents; PAN Card; Aadhaar Card; and any other document relevant to your health insurance requirement.'],
+  ['File instruction','You can select up to 10 files. For easier sharing, keep each file preferably below 10 MB.'],
+  ['Privacy','Upload only documents you are comfortable sharing. Files are not uploaded to this website; they remain on your device until you choose to share them.']
+ ],false);
 
-  const pages=doc.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
-    doc.setPage(i);
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100,100,100);
-    doc.text('Insurance Details',14,291);
-    doc.text('Page '+i+' of '+pages,196,291,{align:'right'});
-  }
-  doc.setTextColor(30,30,30);
-  return doc;
+ const docs=getSelectedFiles();
+ addSection(doc,'Selected Documents',docs.length?docs.map((f,i)=>[String(i+1),f.name+' ('+Math.ceil(f.size/1024)+' KB)']):[['Documents','None selected']],false);
+
+ let y=doc.lastAutoTable.finalY+6;
+ if(y>255){doc.addPage();y=22}
+ doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.text('Declaration',14,y);y+=5;
+ doc.setFont('helvetica','normal');doc.setFontSize(8.7);
+ const declaration='I/We confirm that the information provided above is true and complete to the best of my/our knowledge. I/We understand that all relevant medical information should be disclosed to the insurer.';
+ const lines=doc.splitTextToSize(declaration,182);doc.text(lines,14,y);y+=lines.length*4+6;
+
+ addSection(doc,'Applicant Details',[
+  ['Name',val('name')],['Mobile',val('mobile')],['Date',val('date')],['Signature',val('signature')]
+ ],false);
+
+ const pages=doc.getNumberOfPages();
+ for(let i=1;i<=pages;i++){
+  doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+  doc.text('Insurance Details',14,289);doc.text('Page '+i+' of '+pages,196,289,{align:'right'});
+ }
+ doc.setTextColor(30,30,30);
+ return doc;
 }
-
 async function makePDFBlob(){
-  if(!window.jspdf || !window.jspdf.jsPDF || !window.jspdf.jsPDF.API.autoTable){
-    throw new Error('PDF library is not available. Please check your internet connection and try again.');
-  }
-  const doc=buildJsPDF();
-  return doc.output('blob');
+ if(!window.jspdf||!window.jspdf.jsPDF||!window.jspdf.jsPDF.API.autoTable)throw new Error('PDF library is not available.');
+ return buildJsPDF().output('blob');
 }
-
-async function sharePDFOnWhatsApp(){
-  if(!validateForm()) return;
-  const btn=event && event.currentTarget ? event.currentTarget : null;
-  if(btn){btn.disabled=true;btn.textContent='Preparing PDF…';}
-  try{
-    const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-    const pdfFile=new File([blob],filename,{type:'application/pdf'});
-    const files=[pdfFile,...getSelectedFiles()];
-
-    // Prefer the native file-share sheet. This allows PDF + supporting documents
-    // to be shared together to WhatsApp on devices/browsers that support file sharing.
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:files}))){
-      await navigator.share({
-        files:files,
-        title:'Insurance Details',
-        text:'Completed Insurance Details with supporting documents'
-      });
-    }else{
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download=filename;
-      document.body.appendChild(a);a.click();a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),3000);
-      window.open('https://wa.me/917022021315?text='+encodeURIComponent('I have completed the Insurance Details. Please find the PDF and supporting documents attached.'),'_blank');
-      alert('Your full PDF has been downloaded. Please attach the PDF and the selected supporting documents in WhatsApp and send them to 7022021315.');
-    }
-  }catch(err){
-    if(err && err.name!=='AbortError'){
-      alert('Unable to share the files automatically. Please use Download / Save as PDF and attach the PDF and documents in WhatsApp.');
-      console.error(err);
-    }
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='Share PDF on WhatsApp';}
-  }
-}
-
-
-async function sendByEmail(){
-  if(!validateForm()) return;
-  const btn=event && event.currentTarget ? event.currentTarget : null;
-  if(btn){btn.disabled=true;btn.textContent='Preparing Email…';}
-  try{
-    const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-
-    const recipients='jagadishs457@gmail.com,insuranceconsultant@ksca.co.in';
-    const subject='Insurance Details - '+(val('name')||'New Enquiry');
-    const body='Dear Sir,\\n\\nPlease find the completed Insurance Details form. The PDF has been downloaded to this device. Please attach the PDF and any supporting documents before sending this email.\\n\\nInsurance Issue: '+(sel('issueType')||'')+'\\n\\nRegards';
-    window.location.href='mailto:'+encodeURIComponent(recipients)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-
-    alert('The Insurance Details PDF has been downloaded. Please attach the PDF and supporting documents to the email before sending.');
-  }catch(err){
-    alert('Unable to prepare the email. Please use Download / Save as PDF and email the files manually.');
-    console.error(err);
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='Send PDF by Email';}
-  }
-}
-
 async function downloadPDF(){
-  if(!validateForm()) return;
-  const btn=event && event.currentTarget ? event.currentTarget : null;
-  if(btn){btn.disabled=true;btn.textContent='Creating PDF…';}
-  try{
-    const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-  }catch(err){
-    alert('Unable to create the PDF. Please try again.');
-    console.error(err);
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='Download / Save as PDF';}
-  }
+ if(!validateForm())return;
+ try{
+  const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+ }catch(e){alert('Unable to create the PDF. Please try again.');console.error(e)}
+}
+async function sendPDFToFixedWhatsApp(){
+ if(!validateForm())return;
+ try{
+  const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  window.location.href='https://wa.me/917022021315?text='+encodeURIComponent('Please find my completed Insurance Details. I will attach the PDF and supporting documents here.');
+ }catch(e){alert('Unable to create the PDF. Please use Download / Save as PDF.');console.error(e)}
+}
+async function sendByEmail(){
+ if(!validateForm())return;
+ try{
+  const blob=await makePDFBlob(),filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  const subject='Insurance Details - '+(val('name')||'New Enquiry');
+  const body='Dear Sir,\\n\\nPlease find the completed Insurance Details form. The PDF has been downloaded to this device. Please attach the PDF and any supporting documents before sending this email.\\n\\nInsurance Issue: '+(sel('issueType')||'')+'\\nBrief Details: '+(val('issueDetails')||'')+'\\n\\nRegards';
+  window.location.href='mailto:jagadishs457@gmail.com,insuranceconsultant@ksca.co.in?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+ }catch(e){alert('Unable to prepare the email. Please use Download / Save as PDF.');console.error(e)}
 }
 </script>
 </body>
