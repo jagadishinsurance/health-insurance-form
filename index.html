@@ -47,6 +47,7 @@ button.secondary{background:#fff;color:#1769aa;border:2px solid #1769aa}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 <div class="page">
@@ -204,11 +205,11 @@ I/We confirm that the information provided above is true and complete to the bes
 </div>
 
 <div class="actions">
-<button type="button" onclick="sendPDFToWhatsApp()">Send PDF by WhatsApp</button>
-<button type="button" onclick="sendByEmail()">Send PDF by Email (with Attachment)</button>
-<button type="button" class="secondary" onclick="downloadPDF()">Download / Save as PDF</button>
+<button type="button" onclick="sendPDFToWhatsApp()">Send PDF + Attachments by WhatsApp</button>
+<button type="button" onclick="sendByEmail()">Send PDF + Attachments by Email</button>
+<button type="button" class="secondary" onclick="downloadPDFAndAttachments()">Download PDF + Attachments</button>
 </div>
-<div class="note">WhatsApp: Choose recipient on WhatsApp &nbsp; | &nbsp; Email: jagadishs457@gmail.com; insuranceconsultant@ksca.co.in &nbsp; | &nbsp; PDF contains all completed fields, instructions and selected document names.</div>
+<div class="note">Download PDF + Attachments creates one ZIP containing the completed PDF and all selected supporting documents. &nbsp; | &nbsp; WhatsApp: Choose recipient on WhatsApp &nbsp; | &nbsp; Email: jagadishs457@gmail.com; insuranceconsultant@ksca.co.in &nbsp; | &nbsp; PDF contains all completed fields, instructions and selected document names.</div>
 </form>
 </div>
 
@@ -350,71 +351,116 @@ async function downloadPDF(){
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
  }catch(e){alert('Unable to create the PDF. Please try again.');console.error(e)}
 }
+async function downloadPDFAndAttachments(){
+  if(!validateForm())return;
+  try{
+    if(!window.JSZip)throw new Error('ZIP library is not available.');
+
+    const blob=await makePDFBlob();
+    const pdfName=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+    const zip=new JSZip();
+
+    zip.file(pdfName,blob);
+
+    const docs=getSelectedFiles();
+    if(docs.length){
+      const folder=zip.folder('Supporting Documents');
+      docs.forEach((f,i)=>folder.file((i+1)+'_'+f.name,f));
+    }
+
+    const packageBlob=await zip.generateAsync({type:'blob'});
+    const packageName=cleanFileName(val('name'))+'_Insurance_Details_with_Attachments.zip';
+    const url=URL.createObjectURL(packageBlob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=packageName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+  }catch(e){
+    alert('Unable to create the PDF and attachment package. Please try again.');
+    console.error(e);
+  }
+}
+
 async function sendPDFToWhatsApp(){
   if(!validateForm())return;
 
   try{
-    const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-    const file=new File([blob],filename,{type:'application/pdf'});
+    const pdfBlob=await makePDFBlob();
+    const pdfName=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+    const pdfFile=new File([pdfBlob],pdfName,{type:'application/pdf'});
+    const docs=getSelectedFiles();
+    const files=[pdfFile,...docs];
 
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    if(navigator.share && navigator.canShare && navigator.canShare({files:files})){
       await navigator.share({
         title:'Insurance Details',
-        text:'Please find my completed Insurance Details.',
-        files:[file]
+        text:'Please find the completed Insurance Details PDF and supporting documents.',
+        files:files
       });
     }else{
-      const url=URL.createObjectURL(blob);
+      // Fallback: download PDF and documents individually, without ZIP.
       const a=document.createElement('a');
-      a.href=url;
-      a.download=filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const url=URL.createObjectURL(pdfBlob);
+      a.href=url;a.download=pdfName;
+      document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),3000);
-      alert('Your PDF has been downloaded. Please open WhatsApp and choose the person/group you want to send it to.');
+
+      for(const f of docs){
+        const u=URL.createObjectURL(f);
+        const link=document.createElement('a');
+        link.href=u;link.download=f.name;
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(u),3000);
+      }
+      alert('Your PDF and supporting documents have been downloaded separately. Please open WhatsApp and choose the recipient.');
     }
   }catch(e){
     if(e.name!=='AbortError'){
-      alert('Unable to share the PDF. Please use Download / Save as PDF.');
+      alert('Unable to share the PDF and supporting documents. Please try again.');
       console.error(e);
     }
   }
 }
+
 async function sendByEmail(){
   if(!validateForm())return;
 
   try{
-    const blob=await makePDFBlob();
-    const filename=cleanFileName(val('name'))+'_Insurance_Details.pdf';
-    const file=new File([blob],filename,{type:'application/pdf'});
+    const pdfBlob=await makePDFBlob();
+    const pdfName=cleanFileName(val('name'))+'_Insurance_Details.pdf';
+    const pdfFile=new File([pdfBlob],pdfName,{type:'application/pdf'});
+    const docs=getSelectedFiles();
+    const files=[pdfFile,...docs];
 
-    /*
-      Web Share API allows the PDF itself to be passed to the device's
-      share sheet. The user can choose Gmail, Outlook, or another email
-      application and the PDF appears as an attachment.
-    */
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    if(navigator.share && navigator.canShare && navigator.canShare({files:files})){
       await navigator.share({
         title:'Insurance Details',
-        text:'Please find the completed Insurance Details form.',
-        files:[file]
+        text:'Please find the completed Insurance Details PDF and supporting documents.',
+        files:files
       });
     }else{
-      const url=URL.createObjectURL(blob);
+      // Fallback: download PDF and documents separately, without ZIP.
       const a=document.createElement('a');
-      a.href=url;
-      a.download=filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const url=URL.createObjectURL(pdfBlob);
+      a.href=url;a.download=pdfName;
+      document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),3000);
-      alert('Your email application/browser does not support direct PDF attachment sharing. The PDF has been downloaded; please attach it to an email.');
+
+      for(const f of docs){
+        const u=URL.createObjectURL(f);
+        const link=document.createElement('a');
+        link.href=u;link.download=f.name;
+        document.body.appendChild(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(u),3000);
+      }
+      alert('Your PDF and supporting documents have been downloaded separately. Please open your email application and attach the files.');
     }
   }catch(e){
     if(e.name!=='AbortError'){
-      alert('Unable to share the PDF by email. Please use Download / Save as PDF.');
+      alert('Unable to share the PDF and supporting documents. Please try again.');
       console.error(e);
     }
   }
